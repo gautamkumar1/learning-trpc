@@ -4,6 +4,8 @@ import { Todo, User } from "./schema/schema.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { connectDB } from "./utils/db.js";
 import { userRouter } from "./router/user.js";
+import cors from 'cors';
+import { todoRouter } from "./router/todo.js";
 connectDB().then(() => {
     console.log('Connected to MongoDB');
 }).catch((err) => {
@@ -11,10 +13,12 @@ connectDB().then(() => {
 });
 const appRouter = router({
     user: userRouter,
+    todo: todoRouter,
 })
 const SECRET = 'secret';
 const server = createHTTPServer({
     router: appRouter,
+    middleware: cors(),
     createContext(opts) {
         let authHeader = opts.req.headers["authorization"];
 
@@ -22,7 +26,7 @@ const server = createHTTPServer({
             const token = authHeader.split(' ')[1] as string;
             console.log(token);
             return new Promise<{db: {Todo: typeof Todo, User: typeof User}, userId?: JwtPayload | string}>((resolve) => {
-                jwt.verify(token, SECRET, (err, user) => {
+                jwt.verify(token, SECRET, (_err,user) => {
                     if (user) {
                         resolve({userId: user as JwtPayload | string, db: {Todo, User}});
                     } else {
