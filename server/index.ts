@@ -1,28 +1,16 @@
-import { publicProcedure, router } from "./trpc.js";
-import { z } from "zod";
+import { router } from "./trpc.js";
 import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import { Todo, User } from "./schema/schema.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { connectDB } from "./utils/db.js";
-const TodoInput = z.object({
-    title: z.string(),
-    description: z.string(),
-})
+import { userRouter } from "./router/user.js";
 connectDB().then(() => {
     console.log('Connected to MongoDB');
 }).catch((err) => {
     console.error('Error connecting to MongoDB:', err);
 });
 const appRouter = router({
-    createToDo: publicProcedure.input(TodoInput)
-    .mutation(async({input})=>{
-        const title = input.title;
-        const description = input.description;
-        // do some db stuffs
-        return {
-            id: 1,
-        }
-    })
+    user: userRouter,
 })
 const SECRET = 'secret';
 const server = createHTTPServer({
